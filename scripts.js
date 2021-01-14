@@ -5,8 +5,8 @@ const vm = Vue.createApp({
         searchName: '',
         sortType: '',
         currentPage: 1,
-        skipPage: 0
-        // total: 0
+        skipPage: 0,
+        total: 0
       }
     },
     methods: {
@@ -28,7 +28,6 @@ const vm = Vue.createApp({
           this.searchName = '';
           this.currentPage = 1;
           this.skipPage = 0;
-          this.getPage(this.ubikeStops);
       },
       selectPage(page) {
           this.currentPage = page + (this.skipPage * 10)
@@ -37,11 +36,18 @@ const vm = Vue.createApp({
           this.skipPage += count;
           this.currentPage += count * 10
       },
-      getPage(ubikeList)
+      getSort(sortType, ubikeList)
       {
-          this.total = ubikeList.length % 10 === 0
-              ? parseInt(ubikeList.length / 10)
-              : parseInt(ubikeList.length / 10 + 1);
+          if (this.sortType === "useAsc")
+              ubikeList.sort((a, b) => a.sbi - b.sbi);
+          if (this.sortType === "useDesc")
+              ubikeList.sort((a, b) => b.sbi - a.sbi);
+          if (this.sortType === "parkingAsc")
+              ubikeList.sort((a, b) => a.tot - b.tot);
+          if (this.sortType === "parkingDesc")
+              ubikeList.sort((a, b) => b.tot - a.tot);
+
+          return ubikeList;
       }
     },
     created() {
@@ -60,8 +66,9 @@ const vm = Vue.createApp({
               // 將 json 轉陣列後存入 this.ubikeStops
               this.ubikeStops = Object.keys(res.retVal).map(key => res.retVal[key]);
 
-              // 計算分頁
-              this.getPage(this.ubikeStops);
+              this.total = this.ubikeStops.length % 10 === 0
+                  ? parseInt(this.ubikeStops.length / 10)
+                  : parseInt(this.ubikeStops.length / 10 + 1);
           });
 
     },
@@ -69,25 +76,15 @@ const vm = Vue.createApp({
         filteredStops() {
             let ubikeList = this.ubikeStops.filter((d) => d.sna.includes(this.searchName));
             // 計算分頁
-            this.getPage(ubikeList);
+            this.total = ubikeList.length % 10 === 0
+                ? parseInt(ubikeList.length / 10)
+                : parseInt(ubikeList.length / 10 + 1);
 
-            if (this.sortType === "useAsc")
-                ubikeList.sort((a, b) => a.sbi - b.sbi);
-            if (this.sortType === "useDesc")
-                ubikeList.sort((a, b) => b.sbi - a.sbi);
-            if (this.sortType === "parkingAsc")
-                ubikeList.sort((a, b) => a.tot - b.tot);
-            if (this.sortType === "parkingDesc")
-                ubikeList.sort((a, b) => b.tot - a.tot);
+            // 處理排序
+            this.getSort(this.sortType, ubikeList);
 
             let skip = (this.currentPage - 1) * 10;
             return ubikeList.slice(skip, skip + 10);
-        }
+        },
     },
-    watch: {
-        searchName() {
-            this.currentPage = 1;
-            this.skipPage = 0;
-        }
-    }
 }).mount('#app');
