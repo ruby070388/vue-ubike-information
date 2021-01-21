@@ -87,4 +87,9 @@ const vm = Vue.createApp({
             return ubikeList.slice(skip, skip + 10);
         },
     },
+    watch: {
+        searchName() {
+            this.currentPage = 1;
+        }
+    }
 }).mount('#app');
