@@ -4,7 +4,7 @@
     <li>
       <a style="margin-left: 5px;"
          href="#"
-         v-for="page in 10 > total ? total : 10"
+         v-for="page in getTotal"
          :key="page"
          @click="selectPage(page)">{{ page + (skipPage * 10) }}</a>
     </li>
@@ -18,6 +18,11 @@ export default {
   props: {
     skipPage: Number,
     total: Number,
+  },
+  computed:{
+    getTotal() {
+      return 10 > this.total ? this.total : 10;
+    }
   },
   methods: {
     selectPage(page) {

@@ -18,11 +18,11 @@ export default {
   },
   methods: {
     reset () {
+      this.searchChildName = '';
       //傳送母元件
       this.$emit('receiveReset');
     },
     setName(val) {
-      console.log(val)
       //傳送母元件
       this.$emit('receiveName', val);
     }

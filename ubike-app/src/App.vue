@@ -2,7 +2,7 @@
   <div id="app">
     <Search :searchName="searchName" @receiveName="updateName" @receiveReset="updateReset"/>
     <Pagination :skipPage="skipPage" :total="total" @receivePage="updatePage" @receiveSkip="updateSkip"/>
-    <UbikeTable :sortType="sortType" :filteredStops="filteredStops" @receive="updateReceive"/>
+    <UbikeTable :sortType="sortType" :isDesc="isDesc" :filteredStops="filteredStops" @receiveSort="updateSort"/>
   </div>
 </template>
 
@@ -23,6 +23,7 @@ export default {
       ubikeStops: [],
       searchName: '',
       sortType: '',
+      isDesc: false,
       currentPage: 1,
       skipPage: 0,
       total: 0
@@ -51,6 +52,7 @@ export default {
   methods: {
     updateReset () {
       this.sortType = '';
+      this.isDesc = false;
       this.searchName = '';
       this.currentPage = 1;
       this.skipPage = 0;
@@ -62,26 +64,18 @@ export default {
       this.skipPage += count;
       this.currentPage += count * 10
     },
-    getSort(sortType, ubikeList) {
-      if (this.sortType === "useAsc")
-        ubikeList.sort((a, b) => a.sbi - b.sbi);
-      if (this.sortType === "useDesc")
-        ubikeList.sort((a, b) => b.sbi - a.sbi);
-      if (this.sortType === "parkingAsc")
-        ubikeList.sort((a, b) => a.tot - b.tot);
-      if (this.sortType === "parkingDesc")
-        ubikeList.sort((a, b) => b.tot - a.tot);
-
-      return ubikeList;
+    getSort(ubikeList) {
+      return this.isDesc
+          ? ubikeList.sort((a, b) => b[this.sortType] - a[this.sortType])
+          : ubikeList.sort((a, b) => a[this.sortType] - b[this.sortType]);
     },
     getTotal(ubikeList) {
       // 計算分頁
-      this.total= ubikeList.length % 10 === 0
-          ? parseInt(ubikeList.length / 10)
-          : parseInt(ubikeList.length / 10 + 1);
+      this.total= Math.ceil(ubikeList.length / 10);
     },
-    updateReceive(val) {
+    updateSort(val) {
       this.sortType = val;
+      this.isDesc = !this.isDesc;
     },
     updateName(val) {
       this.currentPage = 1;
@@ -96,7 +90,7 @@ export default {
       this.getTotal(ubikeList);
 
       // 處理排序
-      this.getSort(this.sortType, ubikeList);
+      this.getSort(ubikeList);
 
       let skip = (this.currentPage - 1) * 10;
       return ubikeList.slice(skip, skip + 10);
